@@ -1,0 +1,285 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --matrix-green: #00ff41;
+  --matrix-darkgreen: #008f11;
+  --matrix-black: #0d0208;
+  --matrix-darkgray: #1a1a2e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: linear-gradient(135deg, #0d0208 0%, #1a1a2e 50%, #0d0208 100%);
+  min-height: 100vh;
+  color: #00ff41;
+  overflow-x: hidden;
+}
+
+/* Matrix rain background effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse at top, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(0, 143, 17, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0208;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #008f11;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00ff41;
+}
+
+/* Glowing text effect */
+.glow-text {
+  text-shadow:
+    0 0 10px rgba(0, 255, 65, 0.8),
+    0 0 20px rgba(0, 255, 65, 0.6),
+    0 0 30px rgba(0, 255, 65, 0.4),
+    0 0 40px rgba(0, 255, 65, 0.2);
+}
+
+/* Subtle glow */
+.glow-subtle {
+  text-shadow:
+    0 0 5px rgba(0, 255, 65, 0.5),
+    0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* Card glow effect */
+.card-glow {
+  box-shadow:
+    0 0 20px rgba(0, 255, 65, 0.2),
+    inset 0 0 20px rgba(0, 255, 65, 0.05);
+}
+
+/* Danger card glow */
+.card-danger {
+  box-shadow:
+    0 0 20px rgba(255, 0, 65, 0.3),
+    inset 0 0 20px rgba(255, 0, 65, 0.05);
+  border-color: #ff0041 !important;
+}
+
+/* Safe card glow */
+.card-safe {
+  box-shadow:
+    0 0 20px rgba(0, 255, 65, 0.3),
+    inset 0 0 20px rgba(0, 255, 65, 0.05);
+  border-color: #00ff41 !important;
+}
+
+/* Warning card glow */
+.card-warning {
+  box-shadow:
+    0 0 20px rgba(255, 200, 0, 0.3),
+    inset 0 0 20px rgba(255, 200, 0, 0.05);
+  border-color: #ffc800 !important;
+}
+
+/* Button styles */
+.btn-matrix {
+  background: linear-gradient(135deg, #008f11 0%, #00ff41 100%);
+  color: #0d0208;
+  font-weight: 600;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-matrix::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-matrix:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 255, 65, 0.4);
+}
+
+.btn-matrix:hover::before {
+  left: 100%;
+}
+
+.btn-matrix:active {
+  transform: translateY(0);
+}
+
+.btn-matrix:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Input/Textarea styles */
+.input-matrix {
+  background: rgba(13, 2, 8, 0.8);
+  border: 1px solid #008f11;
+  color: #00ff41;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 16px;
+  border-radius: 8px;
+  width: 100%;
+  transition: all 0.3s ease;
+  resize: vertical;
+}
+
+.input-matrix:focus {
+  outline: none;
+  border-color: #00ff41;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+
+.input-matrix::placeholder {
+  color: rgba(0, 255, 65, 0.4);
+}
+
+/* Card base styles */
+.matrix-card {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid #008f11;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.matrix-card:hover {
+  transform: translateY(-4px);
+  border-color: #00ff41;
+}
+
+/* Scan animation */
+@keyframes scan {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.scanning .scan-line {
+  animation: scan 1.5s ease-in-out infinite;
+}
+
+/* Typing cursor effect */
+.cursor-blink::after {
+  content: '_';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Loading spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 255, 65, 0.3);
+  border-top-color: #00ff41;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fade in animation */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toast slide-in animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Mobile-optimized button sizes */
+@media (max-width: 640px) {
+  .btn-matrix {
+    padding: 14px 24px;
+    font-size: 14px;
+  }
+}
