@@ -6,6 +6,7 @@ import { Subscription, ParsedSubscription } from '@/types';
 import { ToastProvider, useToast } from '@/components/Toast';
 import SubscriptionCard from '@/components/SubscriptionCard';
 import EmptyState from '@/components/EmptyState';
+import SpendingChart from '@/components/SpendingChart';
 
 function getDaysUntilRenewal(renewalDate: string): number {
     const today = new Date();
@@ -228,6 +229,13 @@ function DashboardContent() {
                             </div>
                         )}
                     </div>
+                </section>
+            )}
+
+            {/* Spending Analytics (only show if has 2+ subscriptions) */}
+            {subscriptions.length >= 2 && (
+                <section className="mb-8 md:mb-12 fade-in max-w-4xl mx-auto" style={{ animationDelay: '0.15s' }}>
+                    <SpendingChart subscriptions={subscriptions} />
                 </section>
             )}
 
