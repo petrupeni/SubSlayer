@@ -69,14 +69,16 @@ export async function POST(request: Request) {
 Analyze the following email text and extract:
 1. service_name: The name of the subscription service (e.g., "Netflix", "Spotify Premium")
 2. cost: The monthly cost as a number (e.g., 15.99). If it's yearly, divide by 12.
-3. currency: The 3-letter currency code (e.g., "USD", "EUR", "GBP", "RON", "CAD", "AUD", "JPY"). Detect from symbols like $, €, £, lei, ¥ or text like "USD", "EUR", etc. Default to "USD" if unclear.
+3. currency: The 3-letter currency code (e.g., "USD", "EUR", "GBP", "RON", "CAD", "AUD", "JPY"). Detect from symbols like $, €, £, lei, ¥ or text. Default to "USD" if unclear.
 4. renewal_date: The next renewal/billing date in YYYY-MM-DD format. If only month and day are provided, assume year ${currentYear} or ${currentYear + 1} (whichever makes the date in the future).
-5. cancellation_url: The cancellation/account settings URL for this service.
-6. website_url: The main website URL for this service (e.g., "https://netflix.com" for Netflix).
+5. cancellation_url: The URL where users can cancel this subscription. Look for it in the email, or if not found, generate the most likely URL based on the service name (e.g., "https://www.spotify.com/account" for Spotify, "https://www.netflix.com/cancelplan" for Netflix).
+6. website_url: The main website URL for this service. ALWAYS provide this - if not in the email, generate it from the service name (e.g., "https://www.spotify.com" for Spotify, "https://www.adobe.com" for Adobe).
+
+IMPORTANT: Always provide website_url and cancellation_url even if you have to guess based on the service name. Use the format "https://www.[servicename].com" as a base.
 
 Return ONLY a valid JSON object with these exact fields. No markdown, no explanation, just the JSON.
 
-Example: {"service_name": "Netflix", "cost": 15.99, "currency": "USD", "renewal_date": "2025-01-15", "cancellation_url": "https://netflix.com/cancelplan", "website_url": "https://netflix.com"}
+Example: {"service_name": "Netflix", "cost": 15.99, "currency": "USD", "renewal_date": "2025-01-15", "cancellation_url": "https://www.netflix.com/cancelplan", "website_url": "https://www.netflix.com"}
 
 Email:
 ${emailText}`;
