@@ -32,6 +32,47 @@ function formatDate(dateString: string): string {
     });
 }
 
+// Common cancellation URLs for popular services
+const KNOWN_CANCELLATION_URLS: Record<string, string> = {
+    'netflix': 'https://www.netflix.com/cancelplan',
+    'spotify': 'https://www.spotify.com/account/subscription/',
+    'spotify premium': 'https://www.spotify.com/account/subscription/',
+    'adobe': 'https://account.adobe.com/plans',
+    'adobe creative cloud': 'https://account.adobe.com/plans',
+    'github': 'https://github.com/settings/billing',
+    'github pro': 'https://github.com/settings/billing',
+    'chatgpt': 'https://chat.openai.com/settings/subscription',
+    'chatgpt plus': 'https://chat.openai.com/settings/subscription',
+    'openai': 'https://platform.openai.com/account/billing',
+    'figma': 'https://www.figma.com/settings',
+    'youtube': 'https://www.youtube.com/paid_memberships',
+    'youtube premium': 'https://www.youtube.com/paid_memberships',
+    'amazon prime': 'https://www.amazon.com/gp/primecentral',
+    'apple music': 'https://support.apple.com/en-us/HT202039',
+    'disney+': 'https://www.disneyplus.com/account',
+    'hulu': 'https://secure.hulu.com/account',
+    'hbo max': 'https://www.max.com/account',
+    'max': 'https://www.max.com/account',
+};
+
+function getCancellationUrl(subscription: Subscription): string | null {
+    // First check if subscription has a direct URL
+    if (subscription.cancellation_url) {
+        return subscription.cancellation_url;
+    }
+
+    // Try to find a known URL
+    const serviceName = subscription.service_name.toLowerCase();
+    for (const [key, url] of Object.entries(KNOWN_CANCELLATION_URLS)) {
+        if (serviceName.includes(key) || key.includes(serviceName)) {
+            return url;
+        }
+    }
+
+    // Try Google search as fallback
+    return `https://www.google.com/search?q=cancel+${encodeURIComponent(subscription.service_name)}+subscription`;
+}
+
 export default function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
     const [isCancelling, setIsCancelling] = useState(false);
     const { showToast } = useToast();
@@ -40,77 +81,35 @@ export default function SubscriptionCard({ subscription, onCancel }: Subscriptio
     const cardClass = getCardClass(daysUntil);
 
     const handleCancel = async () => {
-        // Scenario A: Direct API cancel (updates database)
-        if (subscription.can_cancel_via_api) {
-            setIsCancelling(true);
+        const cancellationUrl = getCancellationUrl(subscription);
 
-            try {
-                const response = await fetch('/api/cancel-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscriptionId: subscription.id }),
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast(`${subscription.service_name} has been cancelled!`, 'success');
-                    onCancel(subscription.id); // Trigger parent to refresh
-                } else {
-                    showToast(data.error || 'Failed to cancel subscription', 'error');
-                }
-            } catch {
-                showToast('Network error. Please try again.', 'error');
-            } finally {
-                setIsCancelling(false);
-            }
-        }
-        // Scenario B: Redirect to cancellation URL, then mark as cancelled in DB
-        else if (subscription.cancellation_url) {
-            window.open(subscription.cancellation_url, '_blank', 'noopener,noreferrer');
+        // Always open the cancellation URL first
+        if (cancellationUrl) {
+            window.open(cancellationUrl, '_blank', 'noopener,noreferrer');
             showToast(`Opening ${subscription.service_name} cancellation page...`, 'info');
-
-            // Also mark as cancelled in our database
-            setIsCancelling(true);
-            try {
-                const response = await fetch('/api/cancel-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscriptionId: subscription.id }),
-                });
-
-                if (response.ok) {
-                    onCancel(subscription.id);
-                }
-            } catch {
-                // Silent fail - user can still cancel manually
-            } finally {
-                setIsCancelling(false);
-            }
         }
-        // No external method - just mark as cancelled in DB
-        else {
-            setIsCancelling(true);
-            try {
-                const response = await fetch('/api/cancel-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscriptionId: subscription.id }),
-                });
 
-                const data = await response.json();
+        // Then mark as cancelled in the database
+        setIsCancelling(true);
+        try {
+            const response = await fetch('/api/cancel-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionId: subscription.id }),
+            });
 
-                if (data.success) {
-                    showToast(`${subscription.service_name} marked as cancelled`, 'success');
-                    onCancel(subscription.id);
-                } else {
-                    showToast(data.error || 'Failed to cancel subscription', 'error');
-                }
-            } catch {
-                showToast('Network error. Please try again.', 'error');
-            } finally {
-                setIsCancelling(false);
+            const data = await response.json();
+
+            if (data.success) {
+                showToast(`${subscription.service_name} marked as cancelled!`, 'success');
+                onCancel(subscription.id);
+            } else {
+                showToast(data.error || 'Failed to update subscription status', 'error');
             }
+        } catch {
+            showToast('Network error. Please try again.', 'error');
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -186,7 +185,7 @@ export default function SubscriptionCard({ subscription, onCancel }: Subscriptio
                         </>
                     ) : (
                         <>
-                            {subscription.can_cancel_via_api ? '⚡' : subscription.cancellation_url ? '↗' : '✕'}
+                            <span>↗</span>
                             <span>Cancel</span>
                         </>
                     )}

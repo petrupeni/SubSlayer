@@ -120,6 +120,7 @@ function DashboardContent() {
                         currency: 'USD',
                         renewal_date: data.data.renewal_date,
                         status: 'active',
+                        cancellation_url: data.data.cancellation_url || null,
                     });
 
                 if (insertError) {
