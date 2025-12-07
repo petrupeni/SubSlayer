@@ -69,12 +69,14 @@ export async function POST(request: Request) {
 Analyze the following email text and extract:
 1. service_name: The name of the subscription service (e.g., "Netflix", "Spotify Premium")
 2. cost: The monthly cost as a number (e.g., 15.99). If it's yearly, divide by 12.
-3. renewal_date: The next renewal/billing date in YYYY-MM-DD format. If only month and day are provided, assume year ${currentYear} or ${currentYear + 1} (whichever makes the date in the future).
-4. cancellation_url: The most likely cancellation URL for this service (e.g., "https://spotify.com/account" for Spotify). Make an educated guess based on the service name.
+3. currency: The 3-letter currency code (e.g., "USD", "EUR", "GBP", "RON", "CAD", "AUD", "JPY"). Detect from symbols like $, €, £, lei, ¥ or text like "USD", "EUR", etc. Default to "USD" if unclear.
+4. renewal_date: The next renewal/billing date in YYYY-MM-DD format. If only month and day are provided, assume year ${currentYear} or ${currentYear + 1} (whichever makes the date in the future).
+5. cancellation_url: The cancellation/account settings URL for this service.
+6. website_url: The main website URL for this service (e.g., "https://netflix.com" for Netflix).
 
 Return ONLY a valid JSON object with these exact fields. No markdown, no explanation, just the JSON.
 
-Example: {"service_name": "Netflix", "cost": 15.99, "renewal_date": "2025-01-15", "cancellation_url": "https://netflix.com/cancelplan"}
+Example: {"service_name": "Netflix", "cost": 15.99, "currency": "USD", "renewal_date": "2025-01-15", "cancellation_url": "https://netflix.com/cancelplan", "website_url": "https://netflix.com"}
 
 Email:
 ${emailText}`;
@@ -148,8 +150,10 @@ ${emailText}`;
             data: {
                 service_name: parsedData.service_name,
                 cost: parsedData.cost,
+                currency: parsedData.currency || 'USD',
                 renewal_date: normalizedDate,
                 cancellation_url: parsedData.cancellation_url || null,
+                website_url: parsedData.website_url || null,
             },
         });
     } catch (error) {

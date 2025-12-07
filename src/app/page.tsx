@@ -19,6 +19,8 @@ function getDaysUntilRenewal(renewalDate: string): number {
 
 function DashboardContent() {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [cancelledSubscriptions, setCancelledSubscriptions] = useState<Subscription[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [emailText, setEmailText] = useState('');
     const [isScanning, setIsScanning] = useState(false);
@@ -43,10 +45,11 @@ function DashboardContent() {
         if (!supabase) return;
 
         try {
+            // Fetch active subscriptions
             const { data, error } = await supabase
                 .from('subscriptions')
                 .select('*')
-                .neq('status', 'cancelled') // Don't show cancelled subscriptions
+                .neq('status', 'cancelled')
                 .order('renewal_date', { ascending: true });
 
             if (error) {
@@ -55,6 +58,16 @@ function DashboardContent() {
             } else {
                 setSubscriptions(data || []);
             }
+
+            // Fetch cancelled subscriptions for history
+            const { data: cancelledData } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('status', 'cancelled')
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            setCancelledSubscriptions(cancelledData || []);
         } catch (err) {
             console.error('Fetch error:', err);
         } finally {
@@ -118,10 +131,11 @@ function DashboardContent() {
                         user_id: user.id,
                         service_name: data.data.service_name,
                         cost: data.data.cost,
-                        currency: 'USD',
+                        currency: data.data.currency || 'USD',
                         renewal_date: data.data.renewal_date,
                         status: 'active',
                         cancellation_url: data.data.cancellation_url || null,
+                        website_url: data.data.website_url || null,
                     });
 
                 if (insertError) {
@@ -316,6 +330,60 @@ Thank you for joining us!"`}
                     <EmptyState onScanClick={scrollToScan} />
                 )}
             </section>
+
+            {/* History Section */}
+            {cancelledSubscriptions.length > 0 && (
+                <section className="mt-8 md:mt-12 fade-in" style={{ animationDelay: '0.4s' }}>
+                    <div className="flex items-center justify-center gap-4 mb-4 md:mb-6">
+                        <button
+                            onClick={() => setShowHistory(!showHistory)}
+                            className="text-matrix-darkgreen hover:text-matrix-green transition-colors flex items-center gap-2"
+                        >
+                            <span>{showHistory ? '▼' : '▶'}</span>
+                            <span className="text-lg font-medium">
+                                History ({cancelledSubscriptions.length} cancelled)
+                            </span>
+                        </button>
+                    </div>
+
+                    {showHistory && (
+                        <div className="max-w-4xl mx-auto space-y-3">
+                            {cancelledSubscriptions.map((sub) => (
+                                <div
+                                    key={sub.id}
+                                    className="matrix-card p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 opacity-60"
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="font-bold text-gray-400 line-through">
+                                                {sub.service_name}
+                                            </h4>
+                                            {sub.website_url && (
+                                                <a
+                                                    href={sub.website_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-matrix-darkgreen hover:text-matrix-green text-sm"
+                                                >
+                                                    ↗ Website
+                                                </a>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500">
+                                            Was: {sub.currency === 'USD' ? '$' : sub.currency}{Number(sub.cost).toFixed(2)}/mo
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-gray-900/50 text-gray-500">
+                                            Cancelled
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            )}
 
             {/* Footer */}
             <footer className="mt-12 md:mt-16 text-center text-matrix-darkgreen text-xs md:text-sm">

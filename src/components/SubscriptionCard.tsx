@@ -32,6 +32,30 @@ function formatDate(dateString: string): string {
     });
 }
 
+// Currency symbols mapping
+function getCurrencySymbol(currency: string): string {
+    const symbols: Record<string, string> = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'RON': 'lei',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'JPY': '¥',
+        'CHF': 'CHF',
+        'PLN': 'zł',
+        'CZK': 'Kč',
+        'HUF': 'Ft',
+        'SEK': 'kr',
+        'NOK': 'kr',
+        'DKK': 'kr',
+        'INR': '₹',
+        'BRL': 'R$',
+        'MXN': 'MX$',
+    };
+    return symbols[currency] || currency;
+}
+
 // Common cancellation URLs for popular services
 const KNOWN_CANCELLATION_URLS: Record<string, string> = {
     'netflix': 'https://www.netflix.com/cancelplan',
@@ -117,9 +141,22 @@ export default function SubscriptionCard({ subscription, onCancel }: Subscriptio
         <div className={`matrix-card ${cardClass} transition-all duration-300`}>
             {/* Service Name */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg md:text-xl font-bold truncate flex-1 mr-2">
-                    {subscription.service_name}
-                </h3>
+                <div className="flex items-center gap-2 truncate flex-1 mr-2">
+                    <h3 className="text-lg md:text-xl font-bold truncate">
+                        {subscription.service_name}
+                    </h3>
+                    {subscription.website_url && (
+                        <a
+                            href={subscription.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-matrix-darkgreen hover:text-matrix-green text-sm flex-shrink-0"
+                            title="Visit website"
+                        >
+                            ↗
+                        </a>
+                    )}
+                </div>
                 {daysUntil <= 3 && (
                     <span className="text-red-500 text-2xl animate-pulse flex-shrink-0">⚠</span>
                 )}
@@ -131,7 +168,7 @@ export default function SubscriptionCard({ subscription, onCancel }: Subscriptio
                     Monthly Cost
                 </p>
                 <p className="text-2xl md:text-3xl font-bold glow-subtle">
-                    ${Number(subscription.cost).toFixed(2)}
+                    {getCurrencySymbol(subscription.currency)}{Number(subscription.cost).toFixed(2)}
                     <span className="text-sm text-matrix-darkgreen ml-1">
                         {subscription.currency}
                     </span>
@@ -147,7 +184,7 @@ export default function SubscriptionCard({ subscription, onCancel }: Subscriptio
                     {formatDate(subscription.renewal_date)}
                 </p>
                 <p className={`text-sm ${daysUntil <= 3 ? 'text-red-500' :
-                        daysUntil > 10 ? 'text-green-400' : 'text-yellow-400'
+                    daysUntil > 10 ? 'text-green-400' : 'text-yellow-400'
                     }`}>
                     {daysUntil === 0 ? 'Renews today!' :
                         daysUntil === 1 ? 'Renews tomorrow' :

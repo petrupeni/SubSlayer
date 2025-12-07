@@ -12,6 +12,8 @@ export interface Subscription {
     // Smart Cancel fields
     cancellation_url?: string;
     can_cancel_via_api?: boolean;
+    // Website link
+    website_url?: string;
 }
 
 // Type for creating a new subscription (some fields are auto-generated)

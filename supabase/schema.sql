@@ -59,3 +59,7 @@ ADD COLUMN IF NOT EXISTS cancellation_url TEXT;
 -- Add can_cancel_via_api for API-based cancellation
 ALTER TABLE public.subscriptions 
 ADD COLUMN IF NOT EXISTS can_cancel_via_api BOOLEAN DEFAULT false;
+
+-- Add website_url for linking to service website
+ALTER TABLE public.subscriptions 
+ADD COLUMN IF NOT EXISTS website_url TEXT;
